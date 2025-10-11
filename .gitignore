@@ -24,3 +24,30 @@ release
 *.sln
 *.sw?
 
+# Environment files
+.env
+.env.*
+!.env.example
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Caches and temp
+.cache
+.temp
+.tmp
+.vite
+.eslintcache
+
+# Test coverage
+coverage
+
+# Additional build outputs
+out
+build
+
+# Electron
+*.asar
+
+# OS
+Thumbs.db
