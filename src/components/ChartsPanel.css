@@ -1,0 +1,419 @@
+/* ChartsPanel styling matching rainforest theme */
+
+* {
+  box-sizing: border-box;
+}
+
+.w-full {
+  width: 100%;
+  max-width: 100%;
+}
+
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.gap-6 {
+  gap: clamp(0.75rem, 2vw, 1.2rem);
+}
+
+@media (min-width: 768px) {
+  .lg\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lg\:col-span-2 {
+    grid-column: span 2 / span 2;
+  }
+}
+
+/* Responsive chart heights */
+@media (max-width: 640px) {
+  .rounded-2xl.border {
+    padding: 0.75rem;
+  }
+
+  .text-xl {
+    font-size: 1rem;
+  }
+
+  .gap-4 {
+    gap: 0.5rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .gap-6 {
+    gap: 2rem;
+  }
+}
+
+/* Panel styling with glass morphism */
+.rounded-2xl {
+  border-radius: clamp(0.85rem, 2vw, 1.3rem);
+}
+
+.border {
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.1875);
+}
+
+.p-4 {
+  padding: clamp(0.65rem, 1.5vw, 0.9rem);
+}
+
+.p-3 {
+  padding: clamp(0.55rem, 1.3vw, 0.7rem);
+}
+
+/* Apply glass morphism to all panel containers */
+.rounded-2xl.border {
+  background: linear-gradient(180deg, rgba(255,255,255,0.135), rgba(255,255,255,0.06));
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(255,255,255,0.18),
+    0 12px 40px rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.9);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.rounded-xl {
+  border-radius: clamp(0.45rem, 1.2vw, 0.65rem);
+}
+
+.rounded-xl.border {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Text styles */
+.text-xl {
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  line-height: 1.5rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.text-sm {
+  font-size: clamp(0.7rem, 1.4vw, 0.8rem);
+  line-height: 1.2rem;
+}
+
+.text-xs {
+  font-size: clamp(0.62rem, 1.2vw, 0.7rem);
+  line-height: 0.95rem;
+}
+
+/* Flexbox utilities */
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-2 {
+  gap: clamp(0.35rem, 0.8vw, 0.45rem);
+}
+
+.gap-3 {
+  gap: clamp(0.45rem, 1.2vw, 0.65rem);
+}
+
+.gap-4 {
+  gap: clamp(0.6rem, 1.5vw, 0.85rem);
+}
+
+.pl-3 {
+  padding-left: 0.75rem;
+}
+
+.shrink-0 {
+  flex-shrink: 0;
+}
+
+.min-w-0 {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Typography */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.italic {
+  font-style: italic;
+}
+
+.underline {
+  text-decoration-line: underline;
+}
+
+/* Colors */
+.text-gray-500 {
+  color: rgba(255,255,255,0.5);
+}
+
+.text-gray-600 {
+  color: rgba(255,255,255,0.6);
+}
+
+/* Recharts styling overrides */
+.recharts-legend-item-text {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: rgba(255, 255, 255, 0.7) !important;
+}
+
+.recharts-text {
+  fill: rgba(255, 255, 255, 0.7) !important;
+}
+
+.recharts-legend-wrapper {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Hide default tooltip cursor */
+.recharts-tooltip-cursor {
+  fill: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Recharts default tooltip override */
+.recharts-default-tooltip {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  padding: 8px 12px !important;
+}
+
+.recharts-tooltip-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600 !important;
+}
+
+.recharts-tooltip-item {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Spacing utilities */
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+
+.mt-1 {
+  margin-top: 0.25rem;
+}
+
+/* Badge/Pill styling */
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.rounded-full.border {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.px-2 {
+  padding-left: clamp(0.4rem, 1vw, 0.5rem);
+  padding-right: clamp(0.4rem, 1vw, 0.5rem);
+}
+
+.py-0\.5 {
+  padding-top: clamp(0.1rem, 0.3vw, 0.125rem);
+  padding-bottom: clamp(0.1rem, 0.3vw, 0.125rem);
+}
+
+.px-3 {
+  padding-left: clamp(0.5rem, 1.5vw, 0.75rem);
+  padding-right: clamp(0.5rem, 1.5vw, 0.75rem);
+}
+
+.py-1 {
+  padding-top: clamp(0.2rem, 0.5vw, 0.25rem);
+  padding-bottom: clamp(0.2rem, 0.5vw, 0.25rem);
+}
+
+.px-4 {
+  padding-left: clamp(0.75rem, 2vw, 1rem);
+  padding-right: clamp(0.75rem, 2vw, 1rem);
+}
+
+.py-2 {
+  padding-top: clamp(0.4rem, 1vw, 0.5rem);
+  padding-bottom: clamp(0.4rem, 1vw, 0.5rem);
+}
+
+/* Severity pills */
+.bg-red-600 {
+  background-color: #dc2626 !important;
+}
+
+.bg-orange-500 {
+  background-color: #f97316 !important;
+}
+
+.bg-yellow-400 {
+  background-color: #facc15 !important;
+}
+
+.bg-gray-300 {
+  background-color: #d4d4d4 !important;
+}
+
+.text-white {
+  color: #ffffff !important;
+}
+
+.text-black {
+  color: #000000 !important;
+}
+
+/* List styling */
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+.max-h-72 {
+  max-height: 18rem;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.pr-1 {
+  padding-right: 0.25rem;
+}
+
+/* Scrollbar styling */
+.overflow-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Button styling */
+button.rounded-xl {
+  background: linear-gradient(180deg, rgba(255,255,255,0.135), rgba(255,255,255,0.06)) !important;
+  border: 1px solid rgba(255,255,255,0.1875) !important;
+  color: rgba(255,255,255,0.8) !important;
+  font-weight: 600;
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(255,255,255,0.18),
+    0 12px 40px rgba(0,0,0,0.35) !important;
+  cursor: pointer;
+  transition: all 180ms ease;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+button.rounded-xl:focus,
+button.rounded-xl:focus-visible {
+  outline: none !important;
+  border: 1px solid rgba(255,255,255,0.1875) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(255,255,255,0.18),
+    0 12px 40px rgba(0,0,0,0.35) !important;
+}
+
+button.rounded-xl::-moz-focus-inner {
+  border: 0;
+}
+
+button.rounded-xl:hover,
+.hover\:bg-gray-50:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08)) !important;
+  color: rgba(255,255,255,0.85) !important;
+  outline: none !important;
+  border: 1px solid rgba(255,255,255,0.1875) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(255,255,255,0.18),
+    0 12px 40px rgba(0,0,0,0.35) !important;
+}
+
+button.rounded-xl:active {
+  transform: translateY(0);
+}
+
+/* Tabular numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Link styling */
+a {
+  color: rgba(255,255,255,0.7);
+  transition: color 180ms ease;
+}
+
+a:hover {
+  color: rgba(255,255,255,0.9);
+}
+

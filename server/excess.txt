@@ -1,0 +1,438 @@
+// // // // sherlock_runner.js
+// // // const { spawn } = require("child_process");
+// // // const express = require("express");
+// // // const cors = require("cors");
+// // // const app = express();
+// // // app.use(cors());
+// // // app.use(express.json());
+
+// // // /**
+// // //  * POST /scan  { query: "username_or_email_or_name" }
+// // //  * Starts sherlock and streams results over Server-Sent Events at /stream/:jobId
+// // //  */
+// // // const jobs = new Map(); // jobId -> {proc, buffer[]}
+
+// // // app.post("/scan", async (req, res) => {
+// // //   const { query } = req.body;
+// // //   if (!query) return res.status(400).json({ error: "missing query" });
+
+// // //   const jobId = Date.now().toString(36);
+// // //   const args = [
+// // //     "-u",              // unbuffered python, ensures real-time stdout
+// // //     "-m", "sherlock",  // run module
+// // //     query,
+// // //     "--print-found",   // show only positives (Sherlock option)
+// // //     "--json"           // JSON output (Sherlock option)
+// // //   ];
+
+// // //   const proc = spawn("py", args, { stdio: ["ignore", "pipe", "pipe"] });
+// // //   const buffer = [];
+// // //   jobs.set(jobId, { proc, buffer });
+
+// // //   const push = (type, payload) => buffer.push(JSON.stringify({ type, ...payload }) + "\n");
+
+// // //   proc.stdout.on("data", (chunk) => {
+// // //     // sherlock emits lines; forward both raw log and parsed JSON if possible
+// // //     const text = chunk.toString();
+// // //     text.split(/\r?\n/).forEach((line) => {
+// // //       if (!line.trim()) return;
+// // //       push("log", { text: line });
+// // //       try {
+// // //         const obj = JSON.parse(line);
+// // //         // adapt to your UI event shape here:
+// // //         Object.entries(obj).forEach(([site, val]) => {
+// // //           if (val?.status === "FOUND" || val?.exists === true) {
+// // //             push("result", {
+// // //               item: {
+// // //                 id: `${site}:${val?.url || val?.url_user || query}`,
+// // //                 site,
+// // //                 title: `${site} match for "${query}"`,
+// // //                 url: val.url_user || val.url || "",
+// // //                 snippet: val?.username || query,
+// // //                 severity: inferSeverity(site, val),   // your mapping
+// // //                 confidence: 0.9
+// // //               }
+// // //             });
+// // //           }
+// // //         });
+// // //       } catch {
+// // //         // not JSON, ignore parsing
+// // //       }
+// // //     });
+// // //   });
+
+// // //   proc.stderr.on("data", (e) => push("log", { text: e.toString() }));
+// // //   proc.on("close", () => push("done", {}));
+
+// // //   return res.json({ jobId });
+// // // });
+
+// // // app.get("/stream/:jobId", (req, res) => {
+// // //   const job = jobs.get(req.params.jobId);
+// // //   if (!job) return res.status(404).end();
+
+// // //   res.setHeader("Content-Type", "text/event-stream");
+// // //   res.setHeader("Cache-Control", "no-cache");
+// // //   res.setHeader("Connection", "keep-alive");
+
+// // //   // Flush anything already buffered
+// // //   job.buffer.forEach((line) => res.write(`data: ${line}\n\n`));
+
+// // //   const sendFromBuffer = setInterval(() => {
+// // //     while (job.buffer.length) res.write(`data: ${job.buffer.shift()}\n\n`);
+// // //   }, 150);
+
+// // //   req.on("close", () => clearInterval(sendFromBuffer));
+// // // });
+
+// // // function inferSeverity(site, rec) {
+// // //   // simple first-pass mapping; tweak for your model later
+// // //   const highSites = new Set(["twitter", "facebook", "linkedin", "github"]);
+// // //   return highSites.has(site) ? "high" : "medium";
+// // // }
+
+// // // const PORT = 41234;
+// // // app.listen(PORT, () => console.log(`[runner] listening on http://localhost:${PORT}`));
+// // // app.get("/", (_req, res) => res.type("text").send("ok"));
+
+// // // server.js
+// // const { spawn } = require("child_process");
+// // const express = require("express");
+// // const cors = require("cors");
+
+// // const app = express();
+// // app.use(cors());
+// // app.use(express.json());
+
+// // // quick health check
+// // app.get("/", (_req, res) => res.type("text").send("ok"));
+
+// // /**
+// //  * POST /scan  { query: "username" }
+// //  * Starts sherlock and streams results over Server-Sent Events at /stream/:jobId
+// //  */
+// // const jobs = new Map(); // jobId -> { proc, buffer[] }
+
+// // app.post("/scan", async (req, res) => {
+// //   const { query } = req.body || {};
+// //   if (!query) return res.status(400).json({ error: "missing query" });
+
+// //   const jobId = Date.now().toString(36);
+
+// //   // If you want to pin a specific path, set env S HERLOCK_BIN to an absolute path.
+// //   const SHERLOCK_BIN = process.env.SHERLOCK_BIN || "sherlock";
+// //   const args = [
+// //     query,
+// //     "--print-found", // only positives
+// //     "--json"         // JSON output (Sherlock prints a JSON object; we parse it)
+// //   ];
+
+// //   // On Windows, use shell:true so 'sherlock' resolves from PATH
+// //   const proc = spawn(SHERLOCK_BIN, args, {
+// //     stdio: ["ignore", "pipe", "pipe"],
+// //     shell: process.platform === "win32",
+// //     windowsHide: true,
+// //   });
+
+// //   const buffer = [];
+// //   jobs.set(jobId, { proc, buffer });
+
+// //   const push = (type, payload) =>
+// //     buffer.push(JSON.stringify({ type, ...payload }) + "\n");
+
+// //   proc.stdout.on("data", (chunk) => {
+// //     const text = chunk.toString();
+// //     // sherlock may emit a single big JSON blob (and sometimes progress text).
+// //     // We push logs, and also try to parse any JSON objects we see.
+// //     text.split(/\r?\n/).forEach((line) => {
+// //       if (!line.trim()) return;
+// //       push("log", { text: line });
+// //       try {
+// //         const obj = JSON.parse(line); // works if JSON came as a line
+// //         handleSherlockJson(obj, query, push);
+// //       } catch {
+// //         // Not a full JSON line. In many installs sherlock prints one
+// //         // large JSON block — we try to parse the whole chunk as a fallback:
+// //         try {
+// //           const whole = JSON.parse(text);
+// //           handleSherlockJson(whole, query, push);
+// //         } catch {
+// //           // still not JSON; ignore
+// //         }
+// //       }
+// //     });
+// //   });
+
+// //   proc.stderr.on("data", (e) => push("log", { text: e.toString() }));
+
+// //   proc.on("error", (err) => {
+// //     push("log", { text: `spawn error: ${err.message}` });
+// //     push("done", {});
+// //   });
+
+// //   proc.on("close", () => {
+// //     push("done", {});
+// //   });
+
+// //   return res.json({ jobId });
+// // });
+
+// // app.get("/stream/:jobId", (req, res) => {
+// //   const job = jobs.get(req.params.jobId);
+// //   if (!job) return res.status(404).end();
+
+// //   res.setHeader("Content-Type", "text/event-stream");
+// //   res.setHeader("Cache-Control", "no-cache");
+// //   res.setHeader("Connection", "keep-alive");
+
+// //   // Flush anything already buffered
+// //   job.buffer.forEach((line) => res.write(`data: ${line}\n\n`));
+
+// //   const sendFromBuffer = setInterval(() => {
+// //     while (job.buffer.length) res.write(`data: ${job.buffer.shift()}\n\n`);
+// //   }, 150);
+
+// //   req.on("close", () => {
+// //     clearInterval(sendFromBuffer);
+// //     // Optional: kill the process if client disconnects
+// //     // job.proc?.kill("SIGTERM");
+// //   });
+// // });
+
+// // function handleSherlockJson(obj, query, push) {
+// //   // sherlock --json returns an object keyed by site
+// //   // Example:
+// //   // { "twitter": { "status":"FOUND", "url_user":"..." }, "github": { ... } }
+// //   for (const [site, val] of Object.entries(obj || {})) {
+// //     const exists = val?.status === "FOUND" || val?.exists === true;
+// //     if (exists) {
+// //       push("result", {
+// //         item: {
+// //           id: `${site}:${val?.url_user || val?.url || query}`,
+// //           site,
+// //           title: `${site} match for "${query}"`,
+// //           url: val?.url_user || val?.url || "",
+// //           snippet: val?.username || query,
+// //           severity: inferSeverity(site, val),
+// //           confidence: 0.9,
+// //         },
+// //       });
+// //     }
+// //   }
+// // }
+
+// // function inferSeverity(site, _rec) {
+// //   const highSites = new Set(["twitter", "facebook", "linkedin", "github"]);
+// //   return highSites.has(site) ? "high" : "medium";
+// // }
+
+// // const PORT = 41234;
+// // app.listen(PORT, () =>
+// //   console.log(`[runner] listening on http://localhost:${PORT}`)
+// // );
+
+
+// // server.js (replace your /scan handler with this)
+// const fs = require("fs");
+// const path = require("path");
+// const { spawn } = require("child_process");
+// const express = require("express");
+// const cors = require("cors");
+
+// const app = express();
+// app.use(cors());
+// app.use(express.json());
+
+// const jobs = new Map();
+
+// app.post("/scan", (req, res) => {
+//   const { query } = req.body || {};
+//   if (!query) return res.status(400).json({ error: "missing query" });
+
+//   const jobId = Date.now().toString(36);
+//   const buffer = [];
+//   jobs.set(jobId, { buffer });
+
+//   const outputFile = path.join(__dirname, `${jobId}.json`);
+//   const push = (type, payload) => buffer.push(JSON.stringify({ type, ...payload }) + "\n");
+
+//   // Spawn sherlock CLI (using your PATH)
+//   const args = [query, "--print-found", "--json", outputFile];
+//   const proc = spawn("sherlock", args, {
+//     stdio: ["ignore", "pipe", "pipe"],
+//     shell: process.platform === "win32",
+//     windowsHide: true,
+//   });
+
+//   proc.stdout.on("data", (chunk) => {
+//     push("log", { text: chunk.toString() });
+//   });
+
+//   proc.stderr.on("data", (chunk) => {
+//     push("log", { text: chunk.toString() });
+//   });
+
+//   proc.on("error", (err) => {
+//     push("log", { text: `spawn error: ${err.message}` });
+//     push("done", {});
+//   });
+
+//   proc.on("close", () => {
+//     // When Sherlock finishes, read the JSON file
+//     try {
+//       const raw = fs.readFileSync(outputFile, "utf8");
+//       const obj = JSON.parse(raw);
+//       Object.entries(obj).forEach(([site, val]) => {
+//         const found = val?.status === "FOUND" || val?.exists === true;
+//         if (found) {
+//           push("result", {
+//             item: {
+//               id: `${site}:${val?.url_user || val?.url || query}`,
+//               site,
+//               title: `${site} match for "${query}"`,
+//               url: val?.url_user || val?.url || "",
+//               snippet: val?.username || query,
+//               severity: inferSeverity(site),
+//               confidence: 0.9,
+//             },
+//           });
+//         }
+//       });
+//     } catch (err) {
+//       push("log", { text: `Error reading JSON: ${err.message}` });
+//     }
+
+//     // Delete the temp file to avoid clutter
+//     fs.unlink(outputFile, () => {});
+//     push("done", {});
+//   });
+
+//   res.json({ jobId });
+// });
+
+// app.get("/stream/:jobId", (req, res) => {
+//   const job = jobs.get(req.params.jobId);
+//   if (!job) return res.status(404).end();
+
+//   res.setHeader("Content-Type", "text/event-stream");
+//   res.setHeader("Cache-Control", "no-cache");
+//   res.setHeader("Connection", "keep-alive");
+
+//   const flush = setInterval(() => {
+//     while (job.buffer.length) res.write(`data: ${job.buffer.shift()}\n\n`);
+//   }, 200);
+
+//   req.on("close", () => clearInterval(flush));
+// });
+
+// function inferSeverity(site) {
+//   const high = ["twitter", "facebook", "linkedin", "github"];
+//   return high.includes(site) ? "high" : "medium";
+// }
+
+// const PORT = 41234;
+// app.listen(PORT, () =>
+//   console.log(`[runner] listening on http://localhost:${PORT}`)
+// );
+const { spawn } = require("child_process");
+const express = require("express");
+const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.get("/", (_req, res) => res.type("text").send("ok"));
+
+const jobs = new Map();
+
+app.post("/scan", (req, res) => {
+  const { query } = req.body || {};
+  if (!query) return res.status(400).json({ error: "missing query" });
+
+  const jobId = Date.now().toString(36);
+  const buffer = [];
+  jobs.set(jobId, { buffer });
+
+  // Use an output file in the temp directory (no spaces problems)
+  const outputFile = path.join(os.tmpdir(), `chameleon-${jobId}.json`);
+
+  // Point to absolute sherlock.exe, or set env SHERLOCK_BIN to that path.
+  const SHERLOCK_BIN =
+    process.env.SHERLOCK_BIN ||
+    "C:\\Users\\DN138GV\\AppData\\Roaming\\Python\\Python311\\Scripts\\sherlock.exe";
+
+  const args = [query, "--print-found", "--json", outputFile];
+
+  // IMPORTANT: shell: false so args aren’t re-parsed (spaces are fine)
+  const proc = spawn(SHERLOCK_BIN, args, {
+    stdio: ["ignore", "pipe", "pipe"],
+    shell: false,
+    windowsHide: true,
+  });
+
+  const push = (type, payload) =>
+    buffer.push(JSON.stringify({ type, ...payload }) + "\n");
+
+  proc.stdout.on("data", (c) => push("log", { text: c.toString() }));
+  proc.stderr.on("data", (c) => push("log", { text: c.toString() }));
+
+  proc.on("error", (err) => {
+    push("log", { text: `spawn error: ${err.message}` });
+    push("done", {});
+  });
+
+  proc.on("close", () => {
+    try {
+      const raw = fs.readFileSync(outputFile, "utf8");
+      const obj = JSON.parse(raw);
+      for (const [site, val] of Object.entries(obj || {})) {
+        const found = val?.status === "FOUND" || val?.exists === true;
+        if (found) {
+          push("result", {
+            item: {
+              id: `${site}:${val?.url_user || val?.url || query}`,
+              site,
+              title: `${site} match for "${query}"`,
+              url: val?.url_user || val?.url || "",
+              snippet: val?.username || query,
+              severity: inferSeverity(site),
+              confidence: 0.9,
+            },
+          });
+        }
+      }
+    } catch (e) {
+      push("log", { text: `Error reading JSON: ${e.message}` });
+    } finally {
+      fs.existsSync(outputFile) && fs.unlink(outputFile, () => {});
+      push("done", {});
+    }
+  });
+
+  res.json({ jobId });
+});
+
+app.get("/stream/:jobId", (req, res) => {
+  const job = jobs.get(req.params.jobId);
+  if (!job) return res.status(404).end();
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  const flush = setInterval(() => {
+    while (job.buffer.length) res.write(`data: ${job.buffer.shift()}\n\n`);
+  }, 150);
+
+  req.on("close", () => clearInterval(flush));
+});
+
+function inferSeverity(site) {
+  return ["twitter", "facebook", "linkedin", "github"].includes(site) ? "high" : "medium";
+}
+
+app.listen(41234, () => console.log("[runner] http://localhost:41234"));
