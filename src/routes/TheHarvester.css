@@ -427,6 +427,7 @@
   gap: 1rem;
   max-height: calc(100vh - 12rem);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .theharvester-results .results-grid::-webkit-scrollbar {
@@ -454,6 +455,8 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .theharvester-results .section-title {
@@ -475,8 +478,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: calc(100vh - 20rem);
+  max-height: 300px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .theharvester-results .result-list::-webkit-scrollbar {
@@ -493,13 +497,16 @@
 }
 
 .theharvester-results .result-item {
-  padding: 0.875rem 1rem;
+  padding: 0.75rem 0.875rem;
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   color: #2d3748;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-all;
 }
 
 .theharvester-results .result-item:hover {
