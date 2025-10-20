@@ -1,0 +1,354 @@
+/* Holehe Tool - ExifTool-style clean white theme */
+
+.holehe-tool {
+  min-height: 100vh;
+  background: #e8ecf1;
+  color: #2d3748;
+  position: relative;
+  overflow-x: hidden;
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.holehe-tool.exiting {
+  animation: fadeOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.98); }
+}
+
+/* Background - ExifTool style */
+.holehe-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(ellipse at 20% 20%, rgba(203, 213, 224, 0.6) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(176, 190, 207, 0.4) 0%, transparent 50%),
+    linear-gradient(180deg, #e8ecf1 0%, #d5dce4 100%);
+  z-index: 0;
+}
+
+.holehe-tool .exit-button {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  z-index: 100;
+  width: 50px;
+  height: 50px;
+  background: transparent;
+  border: none;
+  color: #4a5568;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.holehe-tool .exit-button:hover {
+  color: #2d3748;
+  transform: translateX(-4px);
+}
+
+.holehe-search {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 600px;
+  padding: 3rem 2rem;
+}
+
+.holehe-branding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.holehe-logo {
+  width: 56px;
+  height: 56px;
+  opacity: 0.9;
+}
+
+.holehe-title-text {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2d3748;
+  letter-spacing: -0.02em;
+}
+
+.holehe-search h2 {
+  color: #4a5568;
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+.holehe-search .search-box {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.holehe-search input {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: white;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  color: #2d3748;
+  transition: all 0.3s ease;
+}
+
+.holehe-search input:focus {
+  outline: none;
+  border-color: #4a5568;
+}
+
+.holehe-search input::placeholder {
+  color: #a0aec0;
+}
+
+.holehe-search .scan-button {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: white;
+  color: #2d3748;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.holehe-search .scan-button:hover {
+  border-color: #4a5568;
+  transform: translateY(-1px);
+}
+
+.holehe-loading {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 600px;
+  padding: 3rem 2rem;
+}
+
+.holehe-loading img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.6; }
+}
+
+.holehe-loading h2 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.holehe-loading p {
+  color: #4a5568;
+}
+
+.search-hint {
+  color: #718096;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+}
+
+.loading-container {
+  text-align: center;
+}
+
+.loading-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loading-message {
+  color: #4a5568;
+}
+
+.processing-dots {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.processing-dots span {
+  width: 8px;
+  height: 8px;
+  background: #4a5568;
+  border-radius: 50%;
+  animation: dotPulse 1.4s infinite ease-in-out;
+}
+
+.processing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.processing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+
+.holehe-results {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1400px;
+  padding: 2rem;
+  margin: 0 auto;
+}
+
+.holehe-tool .new-scan-button-float {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  padding: 0.875rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: white;
+  color: #2d3748;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.holehe-tool .new-scan-button-float:hover {
+  border-color: #4a5568;
+  transform: translateY(-1px);
+}
+
+.holehe-results .results-container {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.holehe-results .results-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.holehe-results .results-title h2 {
+  color: #2d3748;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.holehe-results .results-email {
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.holehe-results .download-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  background: white;
+  color: #2d3748;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.holehe-results .download-button:hover {
+  border-color: #4a5568;
+  transform: translateY(-1px);
+}
+
+.holehe-results .result-section {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.holehe-results .section-title {
+  color: #2d3748;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.holehe-results .result-list ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.holehe-results .result-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.holehe-results .result-list::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+.holehe-results .result-list::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.holehe-results .result-item {
+  padding: 0.875rem 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #2d3748;
+  transition: all 0.2s ease;
+}
+
+.holehe-results .result-item:hover {
+  border-color: #cbd5e0;
+  transform: translateX(4px);
+}
+
+.holehe-results .no-results {
+  text-align: center;
+  padding: 3rem;
+  color: #4a5568;
+}

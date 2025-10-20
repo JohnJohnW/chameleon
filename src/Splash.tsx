@@ -37,10 +37,18 @@ export default function Splash() {
   function handleSubmit() {
     if (isSubmitting) return
     const text = inputValue.trim()
-    if (!text) return
+    
+    // If no input, go to home screen (console-style tool selector)
+    if (!text) {
+      setLeavingHome(true)
+      window.setTimeout(() => {
+        navigate('/home')
+      }, 300)
+      return
+    }
 
-    // navigate to charts page with the query in the URL
-    navigate(`/scan?query=${encodeURIComponent(text)}`)
+    // If input provided, go directly to Sherlock with the query
+    navigate(`/sherlock?query=${encodeURIComponent(text)}`)
 
     // Optional: keep the nice transition
     setLeavingHome(true)
@@ -118,7 +126,7 @@ export default function Splash() {
             >
               {inputValue === '' && (
                 <span className="scan-placeholder" aria-hidden>
-                  scan now
+                  enter to begin
                 </span>
               )}
               <input

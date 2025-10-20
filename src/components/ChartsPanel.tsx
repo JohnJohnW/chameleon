@@ -788,6 +788,7 @@
 
 
 import React, { useEffect, useMemo, useReducer, useState } from "react";
+import { flushSync } from "react-dom";
 import {
   BarChart,
   Bar,
@@ -945,13 +946,34 @@ function useSherlockStream(
   opts: { mode: "sse" | "mock"; jobId?: string },
   onResult?: (item: RunnerEvent & any["item"]) => void
 ) {
+  // Use a ref to avoid recreating the EventSource on every render
+  const onResultRef = React.useRef(onResult);
+  React.useEffect(() => {
+    onResultRef.current = onResult;
+  }, [onResult]);
+
   useEffect(() => {
     if (opts.mode === "sse") {
-      if (!opts.jobId) return;
+      if (!opts.jobId) {
+        console.log('[SSE] No jobId provided, skipping connection');
+        return;
+      }
+      console.log(`[SSE] Connecting to: http://localhost:41234/stream/${opts.jobId}`);
       const es = new EventSource(`http://localhost:41234/stream/${opts.jobId}`);
+      
+      es.onopen = () => {
+        console.log('[SSE] ✅ Connection opened');
+      };
+      
+      es.onerror = (err) => {
+        console.error('[SSE] ❌ Connection error:', err);
+      };
+      
       es.onmessage = (ev) => {
         try {
           const parsed: RunnerEvent = JSON.parse(ev.data);
+          console.log('[SSE] 📨 Received:', parsed.type, parsed.type === 'result' ? parsed.item?.site : '');
+          
           if (parsed.type === "result" && parsed.item) {
             // Randomize or normalize severity once, then use the same value everywhere
             const chosenSeverity: Severity = RANDOMIZE_SEVERITY
@@ -962,13 +984,20 @@ function useSherlockStream(
             dispatch({ type: "ADD_EVENT", payload: mapped });
 
             // Pass item to UI list with the same chosen severity to stay consistent
-            onResult?.({ ...parsed.item, severity: chosenSeverity } as any);
+            console.log('[SSE] ✅ Adding to list:', parsed.item.site);
+            onResultRef.current?.({ ...parsed.item, severity: chosenSeverity } as any);
+          } else if (parsed.type === "done") {
+            console.log('[SSE] ✅ Scan complete! Closing connection.');
+            es.close();
           }
-        } catch {
-          // ignore malformed lines
+        } catch (err) {
+          console.error('[SSE] ❌ Parse error:', err);
         }
       };
-      return () => es.close();
+      return () => {
+        console.log('[SSE] 🔌 Closing connection');
+        es.close();
+      };
     }
 
     // mock mode (already randomizes severity)
@@ -995,7 +1024,7 @@ function useSherlockStream(
         timestamp: Math.floor(Date.now() / 1000),
       };
       dispatch({ type: "ADD_EVENT", payload: evt });
-      onResult?.({
+      onResultRef.current?.({
         id,
         site: src,
         url: "",
@@ -1009,7 +1038,7 @@ function useSherlockStream(
     }, 600);
 
     return () => clearInterval(interval);
-  }, [dispatch, opts.mode, opts.jobId, onResult]);
+  }, [dispatch, opts.mode, opts.jobId]);
 }
 
 // Weighted RNG for demo (rough bias to medium/high)
@@ -1072,9 +1101,13 @@ function clamp01(n: number) {
 export default function ChartsPanel({
   jobId,
   useMock = true,
+  onFirstResult,
+  username = 'unknown',
 }: {
   jobId?: string;
   useMock?: boolean;
+  onFirstResult?: () => void;
+  username?: string;
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -1089,16 +1122,29 @@ export default function ChartsPanel({
   };
   const [found, setFound] = useState<FoundItem[]>([]);
   const seen = React.useRef<Set<string>>(new Set());
+  const onFirstResultRef = React.useRef(onFirstResult);
+  
+  // Keep ref updated
+  React.useEffect(() => {
+    onFirstResultRef.current = onFirstResult;
+  }, [onFirstResult]);
 
-  // Hook to stream: SSE if jobId provided and useMock=false; otherwise mock.
-  useSherlockStream(
-    dispatch,
-    { mode: useMock ? "mock" : "sse", jobId },
-    (item) => {
-      const severity = normalizeSeverity(item.severity as string) as Severity;
-      const dimension = (item.dimension as Dimension) ?? inferDimensionFromSite(item.site);
-      if (!seen.current.has(item.id)) {
-        seen.current.add(item.id);
+  // Memoize the callback to prevent SSE reconnections on every render
+  const handleResult = React.useCallback((item: any) => {
+    const severity = normalizeSeverity(item.severity as string) as Severity;
+    const dimension = (item.dimension as Dimension) ?? inferDimensionFromSite(item.site);
+    if (!seen.current.has(item.id)) {
+      seen.current.add(item.id);
+      
+      // Notify parent on first result
+      const isFirst = seen.current.size === 1;
+      if (isFirst && onFirstResultRef.current) {
+        onFirstResultRef.current();
+      }
+      
+      // Use flushSync to force immediate render (bypass React 18 auto-batching)
+      // This makes results appear one-by-one as they stream in
+      flushSync(() => {
         setFound((prev) =>
           [...prev, {
             id: item.id,
@@ -1107,10 +1153,21 @@ export default function ChartsPanel({
             title: item.title,
             severity,
             dimension,
-          }].sort((a, b) => SEVERITY_ORDER[b.severity] - SEVERITY_ORDER[a.severity])
+          }].sort((a, b) => {
+            const nameA = (a.title || a.site).toLowerCase();
+            const nameB = (b.title || b.site).toLowerCase();
+            return nameA.localeCompare(nameB);
+          })
         );
-      }
+      });
     }
+  }, []); // Empty deps - uses refs which don't change
+
+  // Hook to stream: SSE if jobId provided and useMock=false; otherwise mock.
+  useSherlockStream(
+    dispatch,
+    { mode: useMock ? "mock" : "sse", jobId },
+    handleResult
   );
 
   const barData = useBarData(state.severityCounts);
@@ -1127,100 +1184,55 @@ export default function ChartsPanel({
     [state]
   );
 
+  const downloadResults = () => {
+    if (found.length === 0) {
+      alert('No results to download');
+      return;
+    }
+
+    const content = found.map((f, index) => {
+      return `${index + 1}. ${f.title || f.site}\n   URL: ${f.url || 'N/A'}\n`;
+    }).join('\n');
+
+    // Format date as YYYY-MM-DD
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${dateStr}-sherlock-results-${username}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="w-full grid grid-cols-1 gap-6">
       {/* Summary strip */}
-      <div className="lg:col-span-2 flex items-center justify-between rounded-2xl border p-4">
-        <div className="text-xl font-semibold">Scan in progress</div>
+      <div className="flex items-center justify-between rounded-2xl border p-4">
+        <div className="text-xl font-semibold">Results</div>
         <div className="flex gap-4 text-sm">
           <Badge label="Total" value={totals.total} />
-          <Badge label="Critical" value={totals.critical} />
-          <Badge label="High" value={totals.high} />
-          <Badge label="Med" value={totals.medium} />
-          <Badge label="Low" value={totals.low} />
         </div>
       </div>
 
-      {/* Severity Bar Chart */}
-      <Panel title="Findings by severity">
-        <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={barData} margin={{ top: 12, right: 24, left: 0, bottom: 12 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis dataKey="severity" stroke="rgba(255,255,255,0.6)" />
-            <YAxis allowDecimals={false} stroke="rgba(255,255,255,0.6)" />
-            <Tooltip 
-              contentStyle={{
-                backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                backdropFilter: 'blur(12px)',
-                padding: '8px 12px'
-              }}
-              labelStyle={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: 600 }}
-              itemStyle={{ color: 'rgba(255, 255, 255, 0.8)' }}
-            />
-            <Legend 
-              iconType="none"
-              wrapperStyle={{ color: 'rgba(255, 255, 255, 0.8)' }}
-            />
-            <Bar dataKey="count" name="Count" fill="#8b5cf6" />
-          </BarChart>
-        </ResponsiveContainer>
-      </Panel>
-
-      {/* Risk Radar Chart */}
-      <Panel title="Risk by dimension (normalized)">
-        <ResponsiveContainer width="100%" height={320}>
-          <RadarChart data={radarData}>
-            <PolarGrid stroke="rgba(255,255,255,0.15)" />
-            <PolarAngleAxis 
-              dataKey="dimension" 
-              stroke="rgba(255,255,255,0.6)"
-              tick={{ fill: 'rgba(255, 255, 255, 0.7)' }}
-            />
-            <PolarRadiusAxis 
-              angle={30} 
-              domain={[0, 100]} 
-              stroke="rgba(255,255,255,0.4)"
-              tick={{ fill: 'rgba(255, 255, 255, 0.6)' }}
-            />
-            <Radar 
-              name="Risk" 
-              dataKey="score" 
-              stroke="#8b5cf6" 
-              fill="#8b5cf6" 
-              fillOpacity={0.6} 
-            />
-            <Legend 
-              iconType="none"
-              wrapperStyle={{ color: 'rgba(255, 255, 255, 0.8)' }}
-            />
-            <Tooltip 
-              contentStyle={{
-                backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                backdropFilter: 'blur(12px)',
-                padding: '8px 12px'
-              }}
-              labelStyle={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: 600 }}
-              itemStyle={{ color: 'rgba(255, 255, 255, 0.8)' }}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
-      </Panel>
-
       {/* Found sites list */}
-      <div className="lg:col-span-2">
-        <Panel title={`Found websites (${found.length})`}>
+      <div>
+        <Panel title="">{/* Empty title to remove "Found websites (239)" */}
           <div className="max-h-72 overflow-auto pr-1">
             {found.length === 0 ? (
               <div className="text-sm text-gray-500">No sites found yet…</div>
             ) : (
               <ul className="space-y-2">
                 {found.map((f) => (
-                  <li key={f.id} className="flex items-start justify-between rounded-xl border p-3">
-                    <div className="min-w-0">
+                  <li key={f.id} className="flex items-start rounded-xl border p-3">
+                    <div className="min-w-0 w-full">
                       <div className="font-medium truncate">{f.title || f.site}</div>
                       <div className="text-sm text-gray-600 truncate">
                         {f.url ? (
@@ -1232,10 +1244,6 @@ export default function ChartsPanel({
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 pl-3 shrink-0">
-                      <Pill variant={f.severity}>{f.severity}</Pill>
-                      <span className="text-xs rounded-full border px-2 py-0.5">{labelForDimension(f.dimension)}</span>
-                    </div>
                   </li>
                 ))}
               </ul>
@@ -1244,20 +1252,14 @@ export default function ChartsPanel({
         </Panel>
       </div>
 
-      {/* Controls */}
-      <div className="lg:col-span-2 flex gap-3">
+      {/* Download button */}
+      <div className="flex gap-3">
         <button
           className="rounded-xl border px-4 py-2 hover:bg-gray-50"
-          onClick={() => {
-            // reset charts + found list
-            seen.current = new Set();
-            setFound([]);
-            dispatch({ type: "RESET" });
-          }}
+          onClick={downloadResults}
         >
-          Reset charts & list
+          Download Results (.txt)
         </button>
-        <button className="rounded-xl border px-4 py-2 hover:bg-gray-50">Stop scan</button>
       </div>
     </div>
   );
@@ -1267,7 +1269,7 @@ export default function ChartsPanel({
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border p-4">
-      <div className="mb-3 font-semibold">{title}</div>
+      {title && <div className="mb-3 font-semibold">{title}</div>}
       {children}
     </div>
   );

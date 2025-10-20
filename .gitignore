@@ -1,53 +1,51 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
 
-node_modules
-dist
-dist-electron
-release
-*.local
+# Build outputs
+dist/
+build/
+*.egg-info/
+.eggs/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 
-# Environment files
+# Environment
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
+venv/
+env/
 
-# TypeScript build info
-*.tsbuildinfo
+# Reports and outputs
+backend/reports/
+reports/
+*.log
 
-# Caches and temp
-.cache
-.temp
-.tmp
-.vite
-.eslintcache
-
-# Test coverage
-coverage
-
-# Additional build outputs
-out
-build
+# Binaries
+backend/bin/phoneinfoga
 
 # Electron
-*.asar
+out/
+.webpack/
 
-# OS
-Thumbs.db
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.bak
+*.tmp
+.cache/

@@ -1,13 +1,22 @@
 {
   "name": "chameleon",
+  "productName": "Chameleon OSINT",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
+  "description": "Open Source Intelligence Desktop Application",
+  "main": "electron/main.js",
+  "type": "commonjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:mac": "npm run build && electron-builder --mac",
+    "electron:build:win": "npm run build && electron-builder --win",
+    "electron:build:linux": "npm run build && electron-builder --linux"
   },
   "dependencies": {
     "react": "^19.1.1",
@@ -19,24 +28,77 @@
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
-    "vite": "^7.1.7"
+    "vite": "^4.5.3",
+    "wait-on": "^8.0.1"
   },
-  "description": "First version of charts",
-  "main": "eslint.config.js",
+  "build": {
+    "appId": "com.chameleon.osint",
+    "productName": "Chameleon OSINT",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "backend/**/*",
+      "!backend/__pycache__",
+      "!backend/*.pyc"
+    ],
+    "extraResources": [
+      {
+        "from": "backend",
+        "to": "backend",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "public/chameleon.png"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "public/chameleon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "public/chameleon.png"
+    }
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/s4698486-Ethan/Chameleon.git"
+    "url": "git+https://github.com/s4698486-Ethan/Chameleon-front-end.git"
   },
-  "keywords": [],
+  "keywords": [
+    "osint",
+    "intelligence",
+    "sherlock",
+    "desktop"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/s4698486-Ethan/Chameleon/issues"
+    "url": "https://github.com/s4698486-Ethan/Chameleon-front-end/issues"
   },
-  "homepage": "https://github.com/s4698486-Ethan/Chameleon#readme"
+  "homepage": "https://github.com/s4698486-Ethan/Chameleon-front-end#readme"
 }
