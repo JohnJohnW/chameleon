@@ -67,7 +67,7 @@ pip install maigret holehe theHarvester
 npm run electron:dev
 ```
 
-## 📖 Usage
+## Usage
 
 ### Running Individual Tools
 
