@@ -4,7 +4,7 @@ A professional, local-first OSINT (Open Source Intelligence) investigation toolk
 
 ![Chameleon Banner](public/background.png)
 
-## 🎯 Features
+## Features
 
 Chameleon includes 8 powerful OSINT tools:
 
@@ -17,7 +17,7 @@ Chameleon includes 8 powerful OSINT tools:
 7. **Reverse Image Search** - Search images across Google Lens, Yandex, and TinEye
 8. **Geolocation** - Look up IP addresses and coordinates for location intelligence
 
-## ✨ Key Highlights
+## Key Highlights
 
 - **100% Local & Private** - All tools run on your machine, no cloud services required
 - **No API Keys** - No external APIs or registrations needed
@@ -26,7 +26,7 @@ Chameleon includes 8 powerful OSINT tools:
 - **AI-Powered Analysis** - Integrated Ollama for correlating findings
 - **Modern Design** - Nintendo Switch-style carousel interface
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -120,7 +120,7 @@ Ollama analyzes findings from other tools to identify patterns and connections.
 2. Pull models: `ollama pull llama3.2`
 3. Paste results from any tool into Ollama for analysis
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 chameleon/
@@ -146,7 +146,7 @@ chameleon/
 └── package.json         # Node dependencies
 ```
 
-## 🛠️ Development
+## Development
 
 ```bash
 # Run in development mode
@@ -162,7 +162,7 @@ cd backend && python server.py
 npm run dev
 ```
 
-## 📋 Requirements
+## Requirements
 
 ### System Requirements
 - macOS 10.13+, Linux, or Windows 10+
@@ -178,14 +178,14 @@ npm run dev
 - Ollama (for AI analysis)
 - Docker (for isolated tool execution)
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 - **100% Local Processing** - All data stays on your machine
 - **No Telemetry** - No analytics or tracking
 - **No Cloud Services** - No data sent to external servers
 - **Open Source** - Audit the code yourself
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these guidelines:
 
@@ -195,11 +195,11 @@ Contributions are welcome! Please follow these guidelines:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built with these excellent open-source tools:
 - [Maigret](https://github.com/soxoj/maigret)
@@ -211,11 +211,11 @@ Built with these excellent open-source tools:
 - [React](https://reactjs.org/)
 - [Flask](https://flask.palletsprojects.com/)
 
-## 📧 Support
+## Support
 
 For issues, questions, or feature requests, please open an issue on GitHub.
 
-## ⚠️ Legal Disclaimer
+## Legal Disclaimer
 
 This tool is intended for legal, ethical OSINT investigations only. Users are responsible for ensuring their use complies with applicable laws and regulations. Always obtain proper authorization before investigating individuals or organizations.
 
